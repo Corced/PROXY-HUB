@@ -1,0 +1,13 @@
+{$DOMAIN} {
+    handle /connect* {
+        reverse_proxy bridge:8090
+    }
+    handle /api/bridge/* {
+        reverse_proxy bridge:8090
+    }
+    handle {
+        reverse_proxy new-api:3000 {
+            flush_interval -1
+        }
+    }
+}
