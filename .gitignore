@@ -16,3 +16,4 @@ postgres-data/
 9router/
 data-9router/
 new-api/data-*/
+bridge/*
