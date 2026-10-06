@@ -1,5 +1,13 @@
+# Environment files
 .env
 .env.*
+*.env
+
+# Docker Compose override (dev-only port exposure)
+docker-compose.override.yml
+new-api/docker-compose.override.yml
+
+# Data & logs
 data/
 *.log
 resolved.yml

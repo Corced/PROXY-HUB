@@ -27,8 +27,12 @@ services:
     volumes:
       - dev_data:/data
     environment:
-      - SQL_DSN=postgresql://root:123456@postgres:5432/new-api
-      - REDIS_CONN_STRING=redis://redis
+      - SQL_DSN=postgresql://root:${DB_PASSWORD}@postgres:5432/new-api
+      - REDIS_CONN_STRING=redis://:${REDIS_PASSWORD}@redis:6379
+      - SESSION_SECRET=${SESSION_SECRET}
+      - NEW_API_JWT_SECRET=${NEW_API_JWT_SECRET}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
       - TZ=Asia/Shanghai
       - BATCH_UPDATE_ENABLED=true
       # Local HTTP dev mode: keep Secure=false and leave TRUSTED_URL unset. This disables the refresh/logout OriginGuard so the :5173 -> :3000 dev proxy works.
@@ -48,6 +52,7 @@ services:
     image: redis:7-alpine
     container_name: new-api-dev-redis
     restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       - dev-network
 
@@ -57,7 +62,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: root
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: new-api
     volumes:
       - dev_pg_data:/var/lib/postgresql/data

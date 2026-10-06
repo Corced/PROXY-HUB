@@ -10,6 +10,16 @@ Built on top of [New API](https://github.com/QuantumNous/new-api)
 
 ---
 
+## 🔐 Security Setup (Required Before First Run)
+1. Copy `.env.example` to `.env`
+2. Run: `sh new-api/scripts/generate-secrets.sh >> .env`
+3. Edit `.env` and set `INITIAL_ADMIN_EMAIL` and `DOMAIN`
+4. Run: `docker compose -f new-api/docker-compose.yml up -d`
+Never commit `.env` to version control.
+Default credentials are rejected at startup.
+
+---
+
 ## 📝 Overview
 
 **PROXYHUB** is a self-hosted AI gateway project focused on unified AI access, authentication, provider integration, and model management.

@@ -15,10 +15,10 @@ services:
     depends_on:
       - new-api
     networks:
-      - new-api-network
+      - proxy
 
   new-api:
-    build: .                      # builds from YOUR code in this folder
+    build: .
     container_name: new-api
     restart: always
     command: --log-dir /app/logs
@@ -31,6 +31,9 @@ services:
       - SQL_DSN=postgresql://root:${DB_PASSWORD}@postgres:5432/new-api
       - REDIS_CONN_STRING=redis://:${REDIS_PASSWORD}@redis:6379
       - SESSION_SECRET=${SESSION_SECRET}
+      - NEW_API_JWT_SECRET=${NEW_API_JWT_SECRET}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
       - TZ=Asia/Jakarta
       - ERROR_LOG_ENABLED=true
       - BATCH_UPDATE_ENABLED=true
@@ -41,7 +44,8 @@ services:
       - postgres
       - 9router
     networks:
-      - new-api-network
+      - proxy
+      - internal
 
   9router:
     image: decolua/9router:latest
@@ -51,11 +55,11 @@ services:
       - NEXT_PUBLIC_BASE_URL=http://localhost:20128
       - INITIAL_PASSWORD=${ROUTER_PASSWORD}
     volumes:
-      - ./data-9router:/app/data   # your backed-up login
+      - ./data-9router:/app/data
     ports:
       - "127.0.0.1:20128:20128"
     networks:
-      - new-api-network
+      - internal
 
   bridge:
     build: ../bridge
@@ -67,15 +71,16 @@ services:
     depends_on:
       - 9router
     networks:
-      - new-api-network
+      - proxy
+      - internal
 
   redis:
     image: redis:7-alpine
     container_name: redis
     restart: always
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--protected-mode", "yes"]
     networks:
-      - new-api-network
+      - internal
 
   postgres:
     image: postgres:15
@@ -88,7 +93,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
-      - new-api-network
+      - internal
 
 volumes:
   pg_data:
@@ -96,5 +101,8 @@ volumes:
   caddy_config:
 
 networks:
-  new-api-network:
+  proxy:
     driver: bridge
+  internal:
+    driver: bridge
+    internal: true
