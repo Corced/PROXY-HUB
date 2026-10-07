@@ -3,6 +3,7 @@ import { discordGateConfig } from './config/discordGateConfig';
 import { app } from './app';
 import { logger } from './utils/logger';
 import { redis } from './routes/auth';
+import { syncScheduler } from './services/syncScheduler';
 async function start() {
     // Connect to Redis
     try {
@@ -17,15 +18,19 @@ async function start() {
     app.listen(discordGateConfig.DISCORD_GATE_PORT, () => {
         logger.info(`DiscordGate sidecar running on port ${discordGateConfig.DISCORD_GATE_PORT}`);
     });
+    // Start sync scheduler
+    syncScheduler.start();
 }
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     logger.info('SIGTERM received, shutting down gracefully');
+    syncScheduler.stop();
     await redis.quit();
     process.exit(0);
 });
 process.on('SIGINT', async () => {
     logger.info('SIGINT received, shutting down gracefully');
+    syncScheduler.stop();
     await redis.quit();
     process.exit(0);
 });

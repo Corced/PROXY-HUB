@@ -37,7 +37,7 @@
             roll_keep 10
         }
         format json
-        # X-Discord-User-ID header will be set by DiscordGate (Step 10)
+        # X-Discord-User-ID header will be set by DiscordGate
     }
 
     # ── CONNECT/BRIDGE ROUTES ────────────────────────────────
@@ -48,16 +48,33 @@
         reverse_proxy bridge:8090
     }
 
-    # ── MAIN PROXY ───────────────────────────────────────────
-    # NOTE: forward_auth to DiscordGate added in Step 10
-    # forward_auth discord-gate:3001 {
-    #     uri /auth/verify
-    #     copy_headers X-Discord-User-ID X-Discord-Username
-    # }
+    # ── PUBLIC PATHS — exempt from DiscordGate auth ──────────
+    # These paths must be accessible before login
+    @public {
+        path /auth/discord*
+        path /auth/denied*
+        path /health
+    }
+    handle @public {
+        reverse_proxy discord-gate:3001
+    }
 
+    # ── DISCORD GATE VERIFICATION — enforce on all other paths ─
+    # forward_auth sends sub-request to DiscordGate /auth/verify
+    # before every proxied request
+    forward_auth discord-gate:3001 {
+        uri /auth/verify
+
+        # Copy these headers from /auth/verify 200 response
+        # to the upstream request going to New API
+        copy_headers X-Discord-User-ID X-Discord-Username
+    }
+
+    # ── MAIN PROXY — only reached if forward_auth passes ──────
     reverse_proxy new-api:3000 {
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
+        # Discord identity headers forwarded from DiscordGate
         header_up X-Discord-User-ID {header.X-Discord-User-ID}
         header_up X-Discord-Username {header.X-Discord-Username}
         flush_interval -1

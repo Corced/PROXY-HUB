@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-export type DiscordGateEventType = 'LOGIN_SUCCESS' | 'LOGIN_DENIED_NOT_MEMBER' | 'SESSION_REVOKED' | 'MEMBER_LEFT_GUILD' | 'MEMBER_BANNED' | 'MANUAL_REVOKE' | 'API_KEY_REVOKED' | 'USER_PROVISIONED' | 'USER_DISABLED';
+export type DiscordGateEventType = 'LOGIN_SUCCESS' | 'LOGIN_DENIED_NOT_MEMBER' | 'SESSION_REVOKED' | 'MEMBER_LEFT_GUILD' | 'MEMBER_BANNED' | 'MANUAL_REVOKE' | 'API_KEY_REVOKED' | 'USER_PROVISIONED' | 'USER_DISABLED' | 'FULL_REVOKE';
 export interface DiscordAuditLog {
     id: number;
     event_type: DiscordGateEventType;
@@ -42,4 +42,6 @@ export declare class DiscordAuditRepository {
         last24h: number;
     }>;
 }
+export declare function getAuditRepo(): DiscordAuditRepository;
+export declare function setAuditRepo(repo: DiscordAuditRepository): void;
 //# sourceMappingURL=discordAuditRepository.d.ts.map

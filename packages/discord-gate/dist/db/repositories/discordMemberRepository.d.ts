@@ -52,5 +52,12 @@ export declare class DiscordMemberRepository {
      * List all active members (for admin dashboard)
      */
     listActive(limit?: number, offset?: number): Promise<DiscordGateMember[]>;
+    /**
+     * Get all ACTIVE members (for sync scheduler)
+     * Returns all members with status='ACTIVE'
+     */
+    getAllActive(): Promise<DiscordGateMember[]>;
 }
+export declare function getMemberRepo(): DiscordMemberRepository;
+export declare function setMemberRepo(repo: DiscordMemberRepository): void;
 //# sourceMappingURL=discordMemberRepository.d.ts.map

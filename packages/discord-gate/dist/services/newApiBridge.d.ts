@@ -66,5 +66,8 @@ export declare class NewApiBridge {
  * Call once at application startup
  */
 export declare function initNewApiBridge(config: AuthConfig): NewApiBridge;
+export declare const newApiBridge: {
+    getInstance: () => NewApiBridge;
+};
 export {};
 //# sourceMappingURL=newApiBridge.d.ts.map

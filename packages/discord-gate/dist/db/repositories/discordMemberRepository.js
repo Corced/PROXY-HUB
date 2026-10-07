@@ -109,5 +109,29 @@ export class DiscordMemberRepository {
         const result = await this.pool.query(query, [limit, offset]);
         return result.rows;
     }
+    /**
+     * Get all ACTIVE members (for sync scheduler)
+     * Returns all members with status='ACTIVE'
+     */
+    async getAllActive() {
+        const query = `
+      SELECT * FROM discord_gate_members
+      WHERE status = 'ACTIVE'
+      ORDER BY created_at DESC;
+    `;
+        const result = await this.pool.query(query);
+        return result.rows;
+    }
+}
+// Export a lazy-initialized instance for bot commands
+let memberRepoInstance = null;
+export function getMemberRepo() {
+    if (!memberRepoInstance) {
+        throw new Error('Member repo not initialized. Call setMemberRepo() first.');
+    }
+    return memberRepoInstance;
+}
+export function setMemberRepo(repo) {
+    memberRepoInstance = repo;
 }
 //# sourceMappingURL=discordMemberRepository.js.map

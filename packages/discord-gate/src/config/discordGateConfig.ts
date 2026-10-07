@@ -51,7 +51,7 @@ const DiscordGateEnvSchema = z.object({
     .startsWith("redis://"),
   SITE_URL: z.string()
     .url(),
-  NODE_ENV: z.enum(["development", "staging", "production"])
+  NODE_ENV: z.enum(["development", "staging", "production", "test"])
     .default("development"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"])
     .default("info"),
@@ -96,28 +96,43 @@ const DiscordGateEnvSchema = z.object({
     .optional(),
 })
 
-const config = validateEnv(DiscordGateEnvSchema)
+let _config: z.infer<typeof DiscordGateEnvSchema> | null = null
 
-// Production runtime checks
-if (config.NODE_ENV === "production" && config.SITE_URL.startsWith("http://")) {
-  console.error("❌ FATAL: SITE_URL must use HTTPS in production")
-  process.exit(1)
-}
-if (config.NODE_ENV === "production" && config.DISCORD_GATE_SESSION_SECRET.length < 64) {
-  console.warn("⚠️  WARNING: DISCORD_GATE_SESSION_SECRET should be 64+ chars in production")
-}
-if (config.NODE_ENV === "production" && config.NEW_API_ADMIN_TOKEN.length < 32) {
-  console.error("❌ FATAL: NEW_API_ADMIN_TOKEN too short for production")
-  process.exit(1)
-}
-if (config.NODE_ENV === "production" && config.SESSION_SECRET.length < 64) {
-  console.error("❌ FATAL: SESSION_SECRET should be 64+ chars (openssl rand -hex 64) in production")
-  process.exit(1)
-}
-if (config.NODE_ENV === "production" && config.NEW_API_JWT_SECRET.length < 64) {
-  console.error("❌ FATAL: NEW_API_JWT_SECRET should be 64+ chars (openssl rand -hex 64) in production")
-  process.exit(1)
+function getConfig() {
+  if (!_config) {
+    _config = validateEnv(DiscordGateEnvSchema)
+
+    // Production runtime checks
+    if (_config.NODE_ENV === "production" && _config.SITE_URL.startsWith("http://")) {
+      console.error("❌ FATAL: SITE_URL must use HTTPS in production")
+      process.exit(1)
+    }
+    if (_config.NODE_ENV === "production" && _config.DISCORD_GATE_SESSION_SECRET.length < 64) {
+      console.warn("⚠️  WARNING: DISCORD_GATE_SESSION_SECRET should be 64+ chars in production")
+    }
+    if (_config.NODE_ENV === "production" && _config.NEW_API_ADMIN_TOKEN.length < 32) {
+      console.error("❌ FATAL: NEW_API_ADMIN_TOKEN too short for production")
+      process.exit(1)
+    }
+    if (_config.NODE_ENV === "production" && _config.SESSION_SECRET.length < 64) {
+      console.error("❌ FATAL: SESSION_SECRET should be 64+ chars (openssl rand -hex 64) in production")
+      process.exit(1)
+    }
+    if (_config.NODE_ENV === "production" && _config.NEW_API_JWT_SECRET.length < 64) {
+      console.error("❌ FATAL: NEW_API_JWT_SECRET should be 64+ chars (openssl rand -hex 64) in production")
+      process.exit(1)
+    }
+  }
+
+  return _config
 }
 
-export const discordGateConfig = config
-export type DiscordGateConfig = typeof discordGateConfig
+// Lazy proxy that only validates on first access
+export const discordGateConfig = new Proxy({} as any, {
+  get(_target, prop) {
+    const config = getConfig()
+    return config[prop as keyof typeof config]
+  },
+})
+
+export type DiscordGateConfig = z.infer<typeof DiscordGateEnvSchema>

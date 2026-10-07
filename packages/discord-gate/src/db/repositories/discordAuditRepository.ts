@@ -9,7 +9,8 @@ export type DiscordGateEventType =
   | 'MANUAL_REVOKE'
   | 'API_KEY_REVOKED'
   | 'USER_PROVISIONED'
-  | 'USER_DISABLED';
+  | 'USER_DISABLED'
+  | 'FULL_REVOKE';
 
 export interface DiscordAuditLog {
   id: number;
@@ -132,4 +133,18 @@ export class DiscordAuditRepository {
       last24h: parseInt(last24hResult.rows[0].count, 10),
     };
   }
+}
+
+// Export a lazy-initialized instance for bot commands
+let auditRepoInstance: DiscordAuditRepository | null = null;
+
+export function getAuditRepo(): DiscordAuditRepository {
+  if (!auditRepoInstance) {
+    throw new Error('Audit repo not initialized. Call setAuditRepo() first.');
+  }
+  return auditRepoInstance;
+}
+
+export function setAuditRepo(repo: DiscordAuditRepository): void {
+  auditRepoInstance = repo;
 }

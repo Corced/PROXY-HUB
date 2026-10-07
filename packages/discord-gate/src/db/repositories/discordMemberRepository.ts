@@ -143,4 +143,32 @@ export class DiscordMemberRepository {
     const result = await this.pool.query<DiscordGateMember>(query, [limit, offset]);
     return result.rows;
   }
+
+  /**
+   * Get all ACTIVE members (for sync scheduler)
+   * Returns all members with status='ACTIVE'
+   */
+  async getAllActive(): Promise<DiscordGateMember[]> {
+    const query = `
+      SELECT * FROM discord_gate_members
+      WHERE status = 'ACTIVE'
+      ORDER BY created_at DESC;
+    `;
+    const result = await this.pool.query<DiscordGateMember>(query);
+    return result.rows;
+  }
+}
+
+// Export a lazy-initialized instance for bot commands
+let memberRepoInstance: DiscordMemberRepository | null = null;
+
+export function getMemberRepo(): DiscordMemberRepository {
+  if (!memberRepoInstance) {
+    throw new Error('Member repo not initialized. Call setMemberRepo() first.');
+  }
+  return memberRepoInstance;
+}
+
+export function setMemberRepo(repo: DiscordMemberRepository): void {
+  memberRepoInstance = repo;
 }

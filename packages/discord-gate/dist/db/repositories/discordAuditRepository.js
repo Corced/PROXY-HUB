@@ -88,4 +88,15 @@ export class DiscordAuditRepository {
         };
     }
 }
+// Export a lazy-initialized instance for bot commands
+let auditRepoInstance = null;
+export function getAuditRepo() {
+    if (!auditRepoInstance) {
+        throw new Error('Audit repo not initialized. Call setAuditRepo() first.');
+    }
+    return auditRepoInstance;
+}
+export function setAuditRepo(repo) {
+    auditRepoInstance = repo;
+}
 //# sourceMappingURL=discordAuditRepository.js.map

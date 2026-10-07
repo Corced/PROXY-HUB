@@ -5,6 +5,7 @@
  */
 import axios from 'axios';
 import { logger } from '../utils/logger.js';
+import { auditRepo } from '../routes/auth.js';
 export class NewApiBridge {
     static instance;
     client;
@@ -101,6 +102,15 @@ export class NewApiBridge {
             });
             const revokedCount = deleteResponse.data.data || tokenIds.length;
             logger.info('Bulk API key revocation complete', { userId: newApiUserId, revokedCount });
+            // Log each revoked key as audit event
+            for (const token of tokens) {
+                await auditRepo.log({
+                    eventType: 'API_KEY_REVOKED',
+                    discordId: undefined,
+                    newApiUserId: String(newApiUserId),
+                    metadata: { tokenId: token.id, tokenName: token.name, revokedVia: 'bulk' },
+                });
+            }
             return revokedCount;
         }
         catch (error) {
@@ -123,6 +133,13 @@ export class NewApiBridge {
                     await this.client.delete(`/api/user/tokens/${token.id}`);
                     revokedCount++;
                     logger.debug('Revoked API key', { userId: newApiUserId, tokenId: token.id, tokenName: token.name });
+                    // Log each individually revoked key
+                    await auditRepo.log({
+                        eventType: 'API_KEY_REVOKED',
+                        discordId: undefined,
+                        newApiUserId: String(newApiUserId),
+                        metadata: { tokenId: token.id, tokenName: token.name, revokedVia: 'individual' },
+                    });
                 }
                 catch (err) {
                     logger.error('Failed to revoke individual API key', {
@@ -151,6 +168,13 @@ export class NewApiBridge {
                 action: 'disable',
             });
             logger.info('New API user disabled', { userId: newApiUserId });
+            // Log user disabled event
+            await auditRepo.log({
+                eventType: 'USER_DISABLED',
+                discordId: undefined,
+                newApiUserId: String(newApiUserId),
+                metadata: { disabledVia: 'fullRevoke' },
+            });
         }
         catch (error) {
             logger.error('Failed to disable New API user', { userId: newApiUserId, error });
@@ -170,6 +194,13 @@ export class NewApiBridge {
         }
         const keysRevoked = await this.revokeAllUserApiKeys(user.id);
         await this.disableUser(user.id);
+        // Log the full revocation as a summary event
+        await auditRepo.log({
+            eventType: 'FULL_REVOKE',
+            discordId,
+            newApiUserId: String(user.id),
+            metadata: { reason, keysRevoked },
+        });
         logger.info('Full revocation complete', { discordId, newApiUserId: user.id, keysRevoked, reason });
         return { found: true, keysRevoked };
     }
@@ -181,4 +212,8 @@ export class NewApiBridge {
 export function initNewApiBridge(config) {
     return NewApiBridge.getInstance(config);
 }
+// Export a lazy-initialized instance for bot commands
+export const newApiBridge = {
+    getInstance: () => NewApiBridge.getInstance(),
+};
 //# sourceMappingURL=newApiBridge.js.map
