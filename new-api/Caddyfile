@@ -1,13 +1,65 @@
-{$DOMAIN} {
+{
+    # Global Caddy options
+    admin off          # disable Caddy admin API in production
+    email {$CADDY_TLS_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+    # ── SECURITY HEADERS ─────────────────────────────────────
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        # Remove server fingerprinting headers
+        -Server
+        -X-Powered-By
+    }
+
+    # ── ADMIN PANEL LOCKDOWN ─────────────────────────────────
+    @admin {
+        path /admin* /dashboard* /api/admin*
+    }
+    handle @admin {
+        @not_allowlisted {
+            not remote_ip {$CADDY_ADMIN_ALLOWLIST}
+        }
+        respond @not_allowlisted "Access denied" 403
+        reverse_proxy new-api:3000
+    }
+
+    # ── REQUEST LOGGING FOR AUDIT TRAIL ─────────────────────
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 10
+        }
+        format json
+        # X-Discord-User-ID header will be set by DiscordGate (Step 10)
+    }
+
+    # ── CONNECT/BRIDGE ROUTES ────────────────────────────────
     handle /connect* {
         reverse_proxy bridge:8090
     }
     handle /api/bridge/* {
         reverse_proxy bridge:8090
     }
-    handle {
-        reverse_proxy new-api:3000 {
-            flush_interval -1
-        }
+
+    # ── MAIN PROXY ───────────────────────────────────────────
+    # NOTE: forward_auth to DiscordGate added in Step 10
+    # forward_auth discord-gate:3001 {
+    #     uri /auth/verify
+    #     copy_headers X-Discord-User-ID X-Discord-Username
+    # }
+
+    reverse_proxy new-api:3000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Discord-User-ID {header.X-Discord-User-ID}
+        header_up X-Discord-Username {header.X-Discord-Username}
+        flush_interval -1
     }
 }
