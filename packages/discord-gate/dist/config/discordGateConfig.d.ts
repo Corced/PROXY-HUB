@@ -1,0 +1,36 @@
+export declare const discordGateConfig: {
+    DISCORD_BOT_TOKEN: string;
+    DISCORD_CLIENT_ID: string;
+    DISCORD_CLIENT_SECRET: string;
+    DISCORD_REDIRECT_URI: string;
+    TARGET_GUILD_ID: string;
+    DISCORD_INVITE_LINK: string;
+    DISCORD_GATE_PORT: number;
+    BOT_PORT: number;
+    BOT_INTERNAL_SECRET: string;
+    DISCORD_GATE_SESSION_SECRET: string;
+    DISCORD_GATE_INTERNAL_URL: string;
+    NEW_API_INTERNAL_URL: string;
+    NEW_API_ADMIN_TOKEN: string;
+    NEW_API_DEFAULT_GROUP: string;
+    REDIS_URL: string;
+    SITE_URL: string;
+    NODE_ENV: "development" | "staging" | "production";
+    LOG_LEVEL: "error" | "debug" | "info" | "warn";
+    SITE_DOMAIN: string;
+    CADDY_ADMIN_ALLOWLIST: string;
+    SESSION_SECRET: string;
+    NEW_API_JWT_SECRET: string;
+    DB_PASSWORD: string;
+    REDIS_PASSWORD: string;
+    ROUTER_PASSWORD: string;
+    DOMAIN: string;
+    DISCORD_OWNER_ID?: string | undefined;
+    MOD_ROLE_ID?: string | undefined;
+    CADDY_TLS_EMAIL?: string | undefined;
+    INITIAL_ADMIN_EMAIL?: string | undefined;
+    INITIAL_ADMIN_PASSWORD?: string | undefined;
+    CRYPTO_SECRET?: string | undefined;
+};
+export type DiscordGateConfig = typeof discordGateConfig;
+//# sourceMappingURL=discordGateConfig.d.ts.map

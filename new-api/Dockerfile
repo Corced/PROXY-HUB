@@ -36,6 +36,7 @@ RUN apt-get update \
 
 COPY --from=builder2 /build/new-api /
 COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
+COPY scripts/ /app/scripts/
 EXPOSE 3000
 WORKDIR /data
-ENTRYPOINT ["/new-api"]
+ENTRYPOINT ["/bin/sh", "-c", "/app/scripts/check-defaults.sh && /new-api"]

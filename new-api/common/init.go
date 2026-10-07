@@ -57,6 +57,13 @@ func InitEnv() {
 			SessionSecret = ss
 		}
 	}
+	if os.Getenv("NEW_API_JWT_SECRET") != "" {
+		js := os.Getenv("NEW_API_JWT_SECRET")
+		if js == "random_string" || js == "" {
+			log.Println("FATAL: NEW_API_JWT_SECRET is not set or is a default value.")
+			log.Fatal("Please set NEW_API_JWT_SECRET to a strong random string (openssl rand -hex 64).")
+		}
+	}
 	if os.Getenv("CRYPTO_SECRET") != "" {
 		CryptoSecret = os.Getenv("CRYPTO_SECRET")
 	} else {
