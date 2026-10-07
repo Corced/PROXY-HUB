@@ -1,6 +1,5 @@
 # Environment files
 .env
-.env.*
 *.env
 
 # Docker Compose override (dev-only port exposure)
