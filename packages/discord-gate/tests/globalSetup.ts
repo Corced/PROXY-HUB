@@ -10,6 +10,7 @@ export default async function globalSetup() {
   process.env.DISCORD_REDIRECT_URI = 'http://localhost:3001/auth/discord/callback';
   process.env.TARGET_GUILD_ID = '123456789012345678';
   process.env.DISCORD_INVITE_LINK = 'https://discord.gg/test';
+  process.env.DISCORD_API_BASE = 'https://discord.com/api/v10';
   process.env.DISCORD_GATE_PORT = '3001';
   process.env.BOT_PORT = '3002';
   process.env.BOT_INTERNAL_SECRET = 'a'.repeat(32);
@@ -22,6 +23,11 @@ export default async function globalSetup() {
   process.env.SESSION_SECRET = 'c'.repeat(64);
   process.env.NEW_API_JWT_SECRET = 'd'.repeat(64);
   process.env.DB_PASSWORD = 'test_db_password';
+  process.env.POSTGRES_HOST = 'localhost';
+  process.env.POSTGRES_PORT = '5432';
+  process.env.POSTGRES_USER = 'root';
+  process.env.POSTGRES_DB = 'new-api';
+  process.env.TZ = 'Asia/Jakarta';
   process.env.REDIS_PASSWORD = 'test_redis_password';
   process.env.ROUTER_PASSWORD = 'test_router_password';
   process.env.DOMAIN = 'test.example.com';

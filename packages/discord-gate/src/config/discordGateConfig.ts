@@ -18,6 +18,11 @@ const DiscordGateEnvSchema = z.object({
   DISCORD_INVITE_LINK: z.string()
     .url()
     .includes("discord.gg"),
+  DISCORD_PUBLIC_KEY: z.string()
+    .optional(),
+  DISCORD_API_BASE: z.string()
+    .url()
+    .default("https://discord.com/api/v10"),
 
   // ── DiscordGate service ───────────────────────────────────
   DISCORD_GATE_PORT: z.string()
@@ -86,6 +91,18 @@ const DiscordGateEnvSchema = z.object({
     .min(32, "Generate: openssl rand -hex 64"),
   DB_PASSWORD: z.string()
     .min(16, "Generate: openssl rand -base64 24"),
+  POSTGRES_HOST: z.string()
+    .default("postgres"),
+  POSTGRES_PORT: z.string()
+    .default("5432")
+    .transform(Number)
+    .pipe(z.number().min(1).max(65535)),
+  POSTGRES_USER: z.string()
+    .default("root"),
+  POSTGRES_DB: z.string()
+    .default("new-api"),
+  TZ: z.string()
+    .default("Asia/Jakarta"),
   REDIS_PASSWORD: z.string()
     .min(16, "Generate: openssl rand -base64 24"),
   ROUTER_PASSWORD: z.string()

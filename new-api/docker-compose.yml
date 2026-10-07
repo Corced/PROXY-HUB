@@ -9,7 +9,8 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-new-api}
       POSTGRES_USER: ${POSTGRES_USER:-root}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TZ:-Asia/Jakarta}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks: [internal]
@@ -82,6 +83,8 @@ services:
     build: .
     container_name: new-api
     env_file: .env
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
     entrypoint: ["/bin/sh", "-c", "/app/scripts/check-defaults.sh && /app/new-api"]
     depends_on:
       postgres:

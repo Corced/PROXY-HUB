@@ -28,10 +28,14 @@ import { DiscordSessionRepository } from '../db/repositories/discordSessionRepos
 import { DiscordAuditRepository } from '../db/repositories/discordAuditRepository';
 import { Pool } from 'pg';
 
-// PostgreSQL pool - use a separate POSTGRES_URL env var or construct from parts
-const postgresUrl = process.env.POSTGRES_URL ||
-  `postgresql://root:${discordGateConfig.DB_PASSWORD}@postgres:5432/new-api`;
-export const pgPool = new Pool({ connectionString: postgresUrl });
+// PostgreSQL pool built from env vars (no hardcoded host/user/db)
+export const pgPool = new Pool({
+  host: discordGateConfig.POSTGRES_HOST,
+  port: discordGateConfig.POSTGRES_PORT,
+  user: discordGateConfig.POSTGRES_USER,
+  password: discordGateConfig.DB_PASSWORD,
+  database: discordGateConfig.POSTGRES_DB,
+});
 
 // Repositories
 export const memberRepo = new DiscordMemberRepository(pgPool);
@@ -121,7 +125,7 @@ export async function revokeAllMemberSessions(discordId: string): Promise<number
 export async function verifyGuildMembership(discordId: string): Promise<{ isMember: boolean }> {
   try {
     const response = await fetch(
-      `https://discord.com/api/v10/guilds/${discordGateConfig.TARGET_GUILD_ID}/members/${discordId}`,
+      `${discordGateConfig.DISCORD_API_BASE}/guilds/${discordGateConfig.TARGET_GUILD_ID}/members/${discordId}`,
       {
         headers: {
           Authorization: `Bot ${discordGateConfig.DISCORD_BOT_TOKEN}`,
@@ -153,7 +157,7 @@ async function exchangeCodeForToken(code: string, codeVerifier: string): Promise
     code_verifier: codeVerifier,
   });
 
-  const response = await fetch('https://discord.com/api/v10/oauth2/token', {
+  const response = await fetch(`${discordGateConfig.DISCORD_API_BASE}/oauth2/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params,
@@ -168,7 +172,7 @@ async function exchangeCodeForToken(code: string, codeVerifier: string): Promise
 }
 
 async function fetchDiscordUser(accessToken: string): Promise<DiscordUserProfile> {
-  const response = await fetch('https://discord.com/api/v10/users/@me', {
+  const response = await fetch(`${discordGateConfig.DISCORD_API_BASE}/users/@me`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
@@ -256,7 +260,7 @@ router.get('/discord', async (req: Request, res: Response) => {
     code_challenge_method: 'S256',
   });
 
-  res.redirect(`https://discord.com/api/oauth2/authorize?${params.toString()}`);
+  res.redirect(`https://discord.com/oauth2/authorize?${params.toString()}`);
 });
 
 // ─── /auth/discord/callback - OAuth callback ───

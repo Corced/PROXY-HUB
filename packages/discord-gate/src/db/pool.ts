@@ -1,9 +1,13 @@
 import { Pool } from 'pg';
 import { discordGateConfig } from '../config/discordGateConfig';
 
-// Test database pool
+// Database pool built from env vars (no hardcoded host/user/db)
 const pool = new Pool({
-  connectionString: `postgresql://root:${discordGateConfig.DB_PASSWORD}@postgres:5432/new-api`,
+  host: discordGateConfig.POSTGRES_HOST,
+  port: discordGateConfig.POSTGRES_PORT,
+  user: discordGateConfig.POSTGRES_USER,
+  password: discordGateConfig.DB_PASSWORD,
+  database: discordGateConfig.POSTGRES_DB,
 });
 
 pool.on('error', (err) => {
